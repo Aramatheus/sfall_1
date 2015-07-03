@@ -26,7 +26,7 @@ static DWORD InCredits = 0;
 static DWORD CreditsLine = 0;
 
 static const char* ExtraLines[] = {
- "#SFALL 1 " VERSION_STRING,
+ "#SFALL 1  v" VERSION_STRING,
  "",
  "sfall is free software, licensed under the GPL",
  "Copyright 2008-2015  The sfall team",
