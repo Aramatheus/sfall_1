@@ -67,9 +67,6 @@ static const char* ExtraLines[] = {
  "The bug reporters and feature requesters",
  ""
  "",
- "",
- "#FALLOUT",
- ""
 };
 
 static DWORD ExtraLineCount = sizeof(ExtraLines) / 4;
