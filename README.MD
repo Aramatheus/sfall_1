@@ -17,40 +17,40 @@ I have provided the files that I personally needed for compiling in the "Include
 ##License##
 GPL. Copyright 2008-2015, the sfall team.
 
-#Credits##
+#Credits#
 
 ####Authors###
-Timeslip (original)
-Crafty (Fallout 1 continuation)
+ - Timeslip (original)
+ - Crafty (Fallout 1 continuation)
 
 ###Contributors###
-Crafty
-Dream
-Glovz
-Haenlomal
-Helios
-JimTheDinosaur
-Kanhef
-KLIMaka
-Mash
-Mynah
-Noid
-NovaRain
-NVShacker
-phobos2077
-ravachol
-Ray
-Tehnokrat
+ - Crafty
+ - Dream
+ - Glovz
+ - Haenlomal
+ - Helios
+ - JimTheDinosaur
+ - Kanhef
+ - KLIMaka
+ - Mash
+ - Mynah
+ - Noid
+ - NovaRain
+ - NVShacker
+ - phobos2077
+ - ravachol
+ - Ray
+ - Tehnokrat
 
 ###Additional thanks to###
-Nirran
-killap
-MIB88
-Rain man
-Continuum
-Fakeman
-The Master
-Drobovik
-Lexx
-Anyone who has used sfall in their own mods
-The bug reporters and feature requesters
+ - Nirran
+ - killap
+ - MIB88
+ - Rain man
+ - Continuum
+ - Fakeman
+ - The Master
+ - Drobovik
+ - Lexx
+ - Anyone who has used sfall in their own mods
+ - The bug reporters and feature requesters
