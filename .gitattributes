@@ -1,0 +1,229 @@
+###############################################################
+#             https://github.com/Sduibek/myattrib             #
+###############################################################
+
+# The built-in macro attribute "binary" is equivalent to -diff -merge -text
+
+# Auto-detect text files and perform LF normalization
+* text=auto
+
+# C Plus Plus
+*.cpp  diff=cpp
+*.filters  diff=cpp
+*.h  diff=cpp
+*.H  diff=cpp
+*.vcxproj  diff=cpp
+
+# C Sharp
+*.config  diff=csharp
+*.cs  diff=csharp
+*.csproj  diff=csharp
+*.manifest  diff=csharp
+*.resx  diff=csharp
+*.settings  diff=csharp
+*.user  diff=csharp
+*.xml  diff=csharp
+
+# Hypertext markup
+*.html  diff=html
+*.htm  diff=html
+*.odc  diff=html
+*.ODC  diff=html
+
+# Documents
+*.diz  diff=astextplain
+*.DIZ  diff=astextplain
+*.doc  diff=astextplain
+*.DOC  diff=astextplain
+*.docx  diff=astextplain
+*.DOCX  diff=astextplain
+*.dot  diff=astextplain
+*.DOT  diff=astextplain
+*.log  diff=astextplain
+*.LOG  diff=astextplain
+*.markdown  diff=astextplain
+*.md  diff=astextplain
+*.MD  diff=astextplain
+*.pdf  diff=astextplain
+*.PDF  diff=astextplain
+*.rdoc  diff=astextplain
+*.RDOC  diff=astextplain
+*.rtf  diff=astextplain
+*.RTF  diff=astextplain
+*.txt  diff=astextplain
+*.TXT  diff=astextplain
+*.wri  diff=astextplain
+*.WRI  diff=astextplain
+
+# Spreadsheets
+*.csv  diff=astextplain
+*.CSV  diff=astextplain
+*.tsv  diff=astextplain
+*.TSV  diff=astextplain
+*.xls  diff=astextplain
+*.XLS  diff=astextplain
+*.xlsx  diff=astextplain
+*.XLSX  diff=astextplain
+
+# Non-document text
+*.asm  diff=astextplain
+*.ASM  diff=astextplain
+*.bat  diff=astextplain
+*.BAT  diff=astextplain
+*.cfg  diff=astextplain
+*.CFG  diff=astextplain
+*.chm  diff=astextplain
+*.CHM  diff=astextplain
+*.coffee  diff=astextplain
+*.COFFEE  diff=astextplain
+*.inf  diff=astextplain
+*.INF  diff=astextplain
+*.ini  diff=astextplain
+*.INI  diff=astextplain
+*.lnk  diff=astextplain
+*.isl  diff=astextplain
+*.ISL  diff=astextplain
+*.LNK  diff=astextplain
+*.reg  diff=astextplain
+*.REG  diff=astextplain
+
+# Binaries
+*.7z  binary
+*.7Z  binary
+*.application  binary
+*.bmp  binary
+*.BMP  binary
+*.bz2  binary
+*.bZ2  binary
+*.cab  binary
+*.CAB  binary
+*.dat  binary
+*.DAT  binary
+*.dll  binary
+*.DLL  binary
+*.exe  binary
+*.EXE  binary
+*.gz  binary
+*.GZ  binary
+*.jpeg  binary
+*.JPEG  binary
+*.jpg  binary
+*.JPG  binary
+*.mid  binary
+*.MID  binary
+*.mp3  binary
+*.MP3  binary
+*.msi  binary
+*.MSI  binary
+*.msm  binary
+*.MSM  binary
+*.msp  binary
+*.MSP  binary
+*.png  binary
+*.PNG  binary
+*.psd  binary
+*.PSD  binary
+*.rar  binary
+*.RAR  binary
+*.ttf  binary
+*.TTF  binary
+*.zip  binary
+*.ZIP  binary
+
+###############################
+# Fallout text
+###############################
+
+# Premade character stories
+*.bio  diff=astextplain
+*.BIO  diff=astextplain
+
+# Global variable definitions
+*.gam  diff=astextplain
+*.GAM  diff=astextplain
+
+# Lists of files or scripts
+*.lst  diff=astextplain
+*.LST  diff=astextplain
+
+# Dialogs, UI texts, other messages
+*.msg  diff=astextplain
+*.MSG  diff=astextplain
+
+# Movie subtitles
+*.sve  diff=astextplain
+*.SVE  diff=astextplain
+
+###############################
+# Fallout binaries
+###############################
+
+# UI graphics
+*.001  binary
+
+# Fonts
+*.aaf  binary
+*.AAF  binary
+*.fon  binary
+*.FON  binary
+
+# Music and sounds
+*.acm  binary
+*.ACM  binary
+
+# Edge definitions for maps
+*.edg  binary
+*.EDG  binary
+
+# Graphics
+*.fr0  binary
+*.FR0  binary
+*.fr1  binary
+*.FR1  binary
+*.fr2  binary
+*.FR2  binary
+*.fr3  binary
+*.FR3  binary
+*.fr4  binary
+*.FR4  binary
+*.fr5  binary
+*.FR5  binary
+*.frm  binary
+*.FRM  binary
+
+# Saved characters
+*.gcd  binary
+*.gcd  binary
+
+# Compiled scripts
+*.int  binary
+*.INT  binary
+
+# Map data
+*.map  binary
+*.MAP  binary
+
+# Worldmap masks
+*.msk  binary
+*.MSK  binary
+
+# Cutscenes
+*.mve  binary
+*.MVE  binary
+
+# Graphics palettes
+*.pal  binary
+*.PAL  binary
+
+# Critter stats
+*.pro  binary
+*.PRO  binary
+
+# Splash screens
+*.rix  binary
+*.RIX  binary
+
+# Save files
+*.sav  binary
+*.SAV  binary
+
