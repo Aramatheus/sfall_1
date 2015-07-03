@@ -43,14 +43,14 @@ GPL. Copyright 2008-2015, the sfall team.
  - Tehnokrat
 
 ###Additional thanks to###
- - Nirran
- - killap
- - MIB88
- - Rain man
  - Continuum
- - Fakeman
- - The Master
  - Drobovik
+ - Fakeman
+ - killap
  - Lexx
+ - MIB88
+ - Nirran
+ - Rain man
+ - The Master
  - Anyone who has used sfall in their own mods
  - The bug reporters and feature requesters
