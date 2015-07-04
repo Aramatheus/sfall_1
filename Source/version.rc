@@ -8,11 +8,11 @@ BEGIN
  BEGIN
   BLOCK "04090000"
   BEGIN
-   VALUE "FileDescription", "sfall, built for " TARGETVERSION
+   VALUE "FileDescription", "sfall1, built for " TARGETVERSION
    VALUE "FileVersion", VERSION_STRING
-   VALUE "InternalName", "sfall"
+   VALUE "InternalName", "sfall1"
    VALUE "LegalCopyright", "Copyright (C) 2006-2007, Timeslip"
-   VALUE "ProductName", "sfall"
+   VALUE "ProductName", "sfall1"
    VALUE "ProductVersion", VERSION_STRING
   END
  END
