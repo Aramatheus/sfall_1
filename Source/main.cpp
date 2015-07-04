@@ -5,6 +5,8 @@
 
 #include <math.h>
 #include <stdio.h>
+#include "AmmoMod.h"
+#include "Bugs.h"
 #include "Console.h"
 #include "CRC.h"
 #include "Credits.h"
@@ -99,31 +101,6 @@ static const DWORD WalkDistance[] = {
  0x4122E1,                                  // action_loot_container_
  0x412692,                                  // action_use_skill_on_
 };
-
-static void __declspec(naked) SharpshooterFix() {
- __asm {
-  call stat_level_                          // Perception|Восприятие
-  cmp  edi, ds:[0x65F638]                   // _obj_dude
-  jne  end
-  mov  ecx, PERK_sharpshooter               // PERK_sharpshooter
-  xchg ecx, eax
-  call perk_level_                          // Sharpshooter|Меткий стрелок
-  shl  eax, 1
-  add  eax, ecx
-end:
-  retn
- }
-}
-
-static void __declspec(naked) perform_withdrawal_start_hook() {
- __asm {
-  test eax, eax
-  jnz  end
-  retn
-end:
-  jmp  display_print_
- }
-}
 
 static char KarmaGainMsg[128];
 static char KarmaLossMsg[128];
@@ -562,52 +539,6 @@ click:
   call gsound_play_sfx_file_
   pop  eax
 notFour:
-  retn
- }
-}
-
-static void __declspec(naked) pipboy_hook1() {
- __asm {
-  cmp  ebx, 0x20E                           // Кнопка НАЗАД?
-  je   end
-  cmp  byte ptr ds:[0x662CC5], 0            // _holo_flag
-  jne  end
-  xor  ebx, ebx                             // Нет человека - нет проблемы (c) :-p
-end:
-  mov  eax, ds:[0x662C34]                   // _crnt_func
-  retn
- }
-}
-
-static void __declspec(naked) PipAlarm_hook() {
- __asm {
-  mov  ds:[0x662C34], eax                   // _crnt_func
-  mov  eax, 0x400
-  call PipStatus_
-  mov  eax, 0x4FB9D0
-  retn
- }
-}
-
-static void __declspec(naked) scr_save_hook() {
- __asm {
-  mov  ecx, 16
-  cmp  dword ptr [esp+0xDC+4], ecx          // number_of_scripts
-  jg   skip
-  mov  ecx, dword ptr [esp+0xDC+4]
-  cmp  ecx, 0
-  jg   skip
-  xor  eax, eax
-  retn
-skip:
-  sub  dword ptr [esp+0xDC+4], ecx          // number_of_scripts
-  push dword ptr [ebp+0xD00]                // num
-  mov  dword ptr [ebp+0xD00], ecx           // num
-  xor  ecx, ecx
-  xchg dword ptr [ebp+0xD04], ecx           // NextBlock
-  call scr_write_ScriptNode_
-  xchg dword ptr [ebp+0xD04], ecx           // NextBlock
-  pop  dword ptr [ebp+0xD00]                // num
   retn
  }
 }
@@ -1115,7 +1046,7 @@ end:
 }
 
 static DWORD _tmpQNode;
-static void __declspec(naked) queue_find_first_() {
+void __declspec(naked) queue_find_first_() {
  __asm {
   push ecx
 // eax = who, edx = type
@@ -1140,7 +1071,7 @@ end:
  }
 }
 
-static void __declspec(naked) queue_find_next_() {
+void __declspec(naked) queue_find_next_() {
  __asm {
   push ecx
 // eax = who, edx = type
@@ -1161,40 +1092,6 @@ end:
   mov  _tmpQNode, ecx
   pop  ecx
   retn
- }
-}
-
-static const DWORD item_d_check_addict_hook_End = 0x46CC5D;
-static void __declspec(naked) item_d_check_addict_hook() {
- __asm {
-  mov  edx, 2                               // type = зависимость
-  inc  eax
-  test eax, eax                             // Есть drug_pid?
-  jz   skip                                 // Нет
-  dec  eax
-  xchg ebx, eax                             // ebx = drug_pid
-  mov  eax, esi                             // eax = who
-  call queue_find_first_
-loopQueue:
-  test eax, eax                             // Есть что в списке?
-  jz   end                                  // Нет
-  cmp  ebx, dword ptr [eax+0x4]             // drug_pid == queue_addict.drug_pid?
-  je   end                                  // Есть конкретная зависимость
-  mov  eax, esi                             // eax = who
-  call queue_find_next_
-  jmp  loopQueue
-skip:
-  xchg ecx, eax                             // eax = _obj_dude
-  call queue_find_first_
-end:
-  jmp  item_d_check_addict_hook_End
- }
-}
-
-static void __declspec(naked) queue_clear_type_hook() {
- __asm {
-  mov  ebx, [esi]
-  jmp  mem_free_
  }
 }
 
@@ -1253,39 +1150,70 @@ static void __declspec(naked) inven_display_msg_with_linebreak() {
  }
 }
 
-static void __declspec(naked) invenWieldFunc_hook() {
+static int drugExploit = 0;
+static void __declspec(naked) protinst_use_item_hook() {
  __asm {
-  pushad
-  mov  edi, ecx
-  mov  edx, esi
-  xor  ebx, ebx
-  inc  ebx
-  push ebx
-  mov  cl, byte ptr [edi+0x27]
-  and  cl, 0x3
-  xchg edx, eax                             // eax=who, edx=item
-  call item_remove_mult_
-nextWeapon:
-  mov  eax, esi
-  test cl, 0x2                              // Правая рука?
-  jz   leftHand                             // Нет
-  call inven_right_hand_
-  jmp  removeFlag
-leftHand:
-  call inven_left_hand_
-removeFlag:
-  test eax, eax
-  jz   noWeapon
-  and  byte ptr [eax+0x27], 0xFC            // Сбрасываем флаг оружия в руке
-  jmp  nextWeapon
-noWeapon:
-  or   byte ptr [edi+0x27], cl              // Устанавливаем флаг оружия в руке
-  xchg esi, eax
-  mov  edx, edi
-  pop  ebx
-  call item_add_force_
-  popad
-  jmp  item_get_type_
+  dec  drugExploit
+  call obj_use_book_
+  inc  drugExploit
+  retn
+ }
+}
+
+static void __declspec(naked) UpdateLevel_hook() {
+ __asm {
+  inc  drugExploit
+  call perks_dialog_
+  dec  drugExploit
+  retn
+ }
+}
+
+static void __declspec(naked) skill_level_hook() {
+ __asm {
+  dec  drugExploit
+  call skill_level_
+  inc  drugExploit
+  retn
+ }
+}
+
+static void __declspec(naked) SliderBtn_hook() {
+ __asm {
+  dec  drugExploit
+  call skill_inc_point_
+  inc  drugExploit
+  retn
+ }
+}
+
+static void __declspec(naked) SliderBtn_hook1() {
+ __asm {
+  dec  drugExploit
+  call skill_dec_point_
+  inc  drugExploit
+  retn
+ }
+}
+
+static void __declspec(naked) stat_level_hook() {
+ __asm {
+  call stat_get_bonus_
+  cmp  ebx, 6                               // Проверяем только силу-удачу
+  ja   end
+//  test eax, eax                             // А есть хоть какой [+/-]бонус?
+//  jz   end                                  // Нет
+  cmp  drugExploit, 0                       // Вызов из нужных мест?
+  jl   checkPenalty                         // Проверка чтения книг/скилла
+  jg   noBonus                              // Получение перков
+  retn
+checkPenalty:
+  cmp  eax, 1                               // Положительный эффект?
+  jge  end                                  // Да - учитываем его
+noBonus:
+  xor  eax, eax                             // Не учитываем эффект от наркотиков/радиации/etc
+end:
+  retn
  }
 }
 
@@ -1330,10 +1258,7 @@ static void DllMain2() {
   dlogr(" Done", DL_INIT);
  }
 
- dlog("Applying sharpshooter patch.", DL_INIT);
- HookCall(0x42205D, &SharpshooterFix);
- SafeWrite8(0x422094, 0xEB);
- dlogr(" Done", DL_INIT);
+ AmmoModInit();
 
  mapName[64] = 0;
  if (GetPrivateProfileString("Misc", "StartingMap", "", mapName, 64, ini)) {
@@ -1421,10 +1346,6 @@ static void DllMain2() {
   SafeWrite8(0x43F296, 0x31);
   dlogr(" Done", DL_INIT);
  }
-
- dlog("Applying withdrawal perk description crash fix. ", DL_INIT);
- HookCall(0x46CA87, &perform_withdrawal_start_hook);
- dlogr(" Done", DL_INIT);
 
  CritInit();
 
@@ -1606,14 +1527,6 @@ static void DllMain2() {
 // Клавиши навигации в пипбое
  HookCall(0x486F4E, &pipboy_hook);
 
-// Исправление багов кликабельности в пипбое
- MakeCall(0x48709E, &pipboy_hook1, false);
- MakeCall(0x48934C, &PipAlarm_hook, false);
-
-// Исправление ошибки "Too Many Items Bug"
- HookCall(0x493FA6, &scr_save_hook);
- HookCall(0x493FFD, &scr_save_hook);
-
 // Третий вариант концовки для Братства Стали
  MakeCall(0x438B80, &Brotherhood_final, true);
 
@@ -1694,13 +1607,6 @@ static void DllMain2() {
   MakeCall(0x47C7AA, &obj_move_to_tile_hook, true);
  }
 
-// Исправление обработки наркотической зависимости
- MakeCall(0x46CC00, &item_d_check_addict_hook, true);
-
-// Исправление краша (которого тут нет) при использовании стимпаков на жертве с последующим
-// выходом с карты
- HookCall(0x490F9B, &queue_clear_type_hook);
-
 // Можно использовать управляющий символ новой строки (\n) в описании объектов из pro_*.msg
  SafeWrite32(0x462D6F, (DWORD)&display_print_with_linebreak);
  SafeWrite32(0x48A7DA, (DWORD)&display_print_with_linebreak);
@@ -1714,8 +1620,19 @@ static void DllMain2() {
   SafeWrite8(0x42612E, 0x0);
  }
 
-// Исправление "Unlimited Ammo bug"
- HookCall(0x4660DB, &invenWieldFunc_hook);
+ if (GetPrivateProfileIntA("Misc", "DrugExploitFix", 0, ini)) {
+  HookCall(0x48B604, &protinst_use_item_hook);
+  HookCall(0x436283, &UpdateLevel_hook);
+  HookCall(0x434B28, &skill_level_hook);    // SavePlayer_
+  HookCall(0x435670, &SliderBtn_hook);
+  HookCall(0x4356D7, &skill_level_hook);    // SliderBtn_
+  HookCall(0x4356F0, &SliderBtn_hook1);
+  HookCall(0x49CA53, &stat_level_hook);
+ }
+
+ dlog("Running BugsInit.", DL_INIT);
+ BugsInit();
+ dlogr(" Done", DL_INIT);
 
  dlogr("Leave DllMain2", DL_MAIN);  
 }

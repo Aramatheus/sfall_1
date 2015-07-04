@@ -18,6 +18,7 @@
 
 #include "main.h"
 
+#include "Bugs.h"
 #include "Define.h"
 #include "FalloutEngine.h"
 #include "Input.h"
@@ -25,119 +26,6 @@
 #include "PartyControl.h"
 
 static DWORD ReloadWeaponKey = 0;
-static DWORD WeightOnBody = 0;
-
-static const DWORD inven_right_hand_hook_Cont = 0x46555D;
-static const DWORD inven_right_hand_hook_End = 0x465572;
-static void __declspec(naked) inven_right_hand_hook() {
- __asm {
-  cmp  eax, ds:[0x505734]                   // _inven_dude
-  je   end
-  jmp  inven_right_hand_hook_Cont
-end:
-  xchg edx, eax
-  jmp  inven_right_hand_hook_End
- }
-}
-
-static const DWORD inven_left_hand_hook_Cont = 0x46559D;
-static const DWORD inven_left_hand_hook_End = 0x4655B2;
-static void __declspec(naked) inven_left_hand_hook() {
- __asm {
-  cmp  eax, ds:[0x505734]                   // _inven_dude
-  je   end
-  jmp  inven_left_hand_hook_Cont
-end:
-  xchg edx, eax
-  jmp  inven_left_hand_hook_End
- }
-}
-
-static const DWORD inven_worn_hook_Cont = 0x4655DD;
-static const DWORD inven_worn_hook_End = 0x4655F2;
-static void __declspec(naked) inven_worn_hook() {
- __asm {
-  cmp  eax, ds:[0x505734]                   // _inven_dude
-  je   end
-  jmp  inven_worn_hook_Cont
-end:
-  xchg edx, eax
-  jmp  inven_worn_hook_End
- }
-}
-
-static void __declspec(naked) loot_container_hook() {
- __asm {
-  mov  eax, [esp+0x110+0x4]
-  test eax, eax
-  jz   noArmor
-  call item_weight_
-noArmor:
-  mov  WeightOnBody, eax
-  mov  eax, [esp+0x114+0x4]
-  test eax, eax
-  jz   noLeftWeapon
-  call item_weight_
-noLeftWeapon:
-  add  WeightOnBody, eax
-  mov  eax, [esp+0x118+0x4]
-  test eax, eax
-  jz   noRightWeapon
-  call item_weight_
-noRightWeapon:
-  add  WeightOnBody, eax
-  xor  eax, eax
-  inc  eax
-  inc  eax
-  retn
- }
-}
-
-#ifdef TRACE
-static void __declspec(naked) barter_inventory_hook() {
- __asm {
-  mov  eax, [esp+0x18+0x4]
-  test eax, eax
-  jz   noArmor
-  call item_weight_
-noArmor:
-  mov  WeightOnBody, eax
-  mov  eax, [esp+0x1C+0x4]
-  test eax, eax
-  jnz  RightWeapon
-  mov  eax, [esp+0x14+0x4]
-  test eax, eax
-  jz   end
-RightWeapon:
-  call item_weight_
-end:
-  add  WeightOnBody, eax
-  mov  eax, ds:[0x505734]                   // _inven_dude
-  retn
- }
-}
-#endif
-
-static DWORD Looting = 0;
-static void __declspec(naked) correctWeight() {
- __asm {
-  call stat_level_                          // eax = Макс. груз
-  cmp  Looting, 0
-  je   end
-  sub  eax, WeightOnBody                    // Учитываем вес одетой на цели брони и оружия
-end:
-  retn
- }
-}
-
-static void __declspec(naked) move_inventory_hook() {
- __asm {
-  inc  Looting
-  call move_inventory_
-  dec  Looting
-  retn
- }
-}
 
 static const DWORD ReloadActiveHand_play_sfx_ = 0x4565A2;
 static void __declspec(naked) ReloadActiveHand() {
@@ -541,7 +429,7 @@ static void __declspec(naked) display_table_inventories_hook3() {
 }
 #endif
 
-static void __declspec(naked) barter_inventory_hook1() {
+static void __declspec(naked) barter_inventory_hook() {
  __asm {
   call win_draw_
   mov  ecx, -1
@@ -568,12 +456,13 @@ static void __declspec(naked) inven_pickup_hook2() {
   pop  edi
   test eax, eax
   jz   end
-  mov  edx, ds:[0x59CEE8]                   // _curr_stack
-  test edx, edx
+  mov  eax, ds:[0x59CEE8]                   // _curr_stack
+  xchg edi, eax
+  test edi, edi
   jz   useOnPlayer
   jmp  inven_pickup_hook2_End
 useOnPlayer:
-  cmp  edi, 1006                            // Руки?
+  cmp  eax, 1006                            // Руки?
   jge  end                                  // Да
   mov  edx, [esp+0x18]                      // item
   mov  eax, edx
@@ -647,168 +536,6 @@ noRed:
   mov  ecx, 499
   mov  ebx, 120
   jmp  display_stats_hook_End
- }
-}
-
-static DWORD inven_pickup_loop=-1;
-static const DWORD inven_pickup_hook1_Fail = 0x464E16;
-static const DWORD inven_pickup_hook1_Loop = 0x464D00;
-static const DWORD inven_pickup_hook1_End = 0x464D9A;
-static const DWORD inven_pickup_hook1_End1 = 0x464D3C;
-static void __declspec(naked) inven_pickup_hook1() {
- __asm {
-  cmp  inven_pickup_loop, -1
-  jne  inLoop
-  test eax, eax
-  jnz  startLoop
-  jmp  inven_pickup_hook1_Fail
-startLoop:
-  xor  edx, edx
-  mov  inven_pickup_loop, edx
-nextLoop:
-  mov  eax, 124                             // x_start
-  mov  ebx, 188                             // x_end
-  add  edx, 35                              // y_start
-  mov  ecx, edx
-  add  ecx, 48                              // y_end
-  jmp  inven_pickup_hook1_Loop
-inLoop:
-  test eax, eax
-  mov  eax, inven_pickup_loop
-  jnz  foundRect
-  inc  eax
-  mov  inven_pickup_loop, eax
-  imul edx, eax, 48
-  jmp  nextLoop
-foundRect:
-  mov  inven_pickup_loop, -1
-  mov  edx, [esp+0x3C]                      // inventory_offset
-  add  edx, eax
-  mov  eax, ds:[0x59CE50]                   // _pud
-  push eax
-  mov  eax, [eax]                           // itemsCount
-  test eax, eax
-  jz   skip
-  dec  eax
-  cmp  edx, eax
-  jle  inRange
-skip:
-  pop  eax
-  jmp  inven_pickup_hook1_End
-inRange:
-  pop  eax
-  jmp  inven_pickup_hook1_End1
- }
-}
-
-static void __declspec(naked) drop_ammo_into_weapon_hook() {
- __asm {
-  push ecx
-  mov  esi, ecx
-  dec  esi
-  test esi, esi                             // Одна коробка патронов?
-  jz   skip                                 // Да
-  xor  esi, esi
-// Лишняя проверка на from_slot, но пусть будет
-  cmp  edi, 1006                            // Руки?
-  jge  skip                                 // Да
-  lea  edx, [eax+0x2C]                      // Inventory
-  mov  ecx, [edx]                           // itemsCount
-  jcxz skip                                 // инвентарь пустой (ещё лишняя проверка, но пусть будет)
-  mov  edx, [edx+8]                         // FirstItem
-nextItem:
-  cmp  ebp, [edx]                           // Наше оружие?
-  je   foundItem                            // Да
-  add  edx, 8                               // К следующему
-  loop nextItem
-  jmp  skip                                 // Нашего оружия нет в инвентаре
-foundItem:
-  cmp  dword ptr [edx+4], 1                 // Оружие в единственном экземпляре?
-  jg   skip                                 // Нет
-  lea  edx, [eax+0x2C]                      // Inventory
-  mov  edx, [edx]                           // itemsCount
-  sub  edx, ecx                             // edx=порядковый номер слота с оружием
-  lea  ecx, [edi-1000]                      // from_slot
-  add  ecx, [esp+0x3C+4+0x24+8]             // ecx=порядковый номер слота с патронами
-  cmp  edx, ecx                             // Оружие после патронов?
-  jg   skip                                 // Да
-  inc  esi                                  // Нет, нужно менять from_slot
-skip:
-  pop  ecx
-  mov  edx, ebp
-  call item_remove_mult_
-  test eax, eax                             // Удалили оружие из инвентаря?
-  jnz  end                                  // Нет
-  sub  [esp+0x24+4], esi                    // Да, корректируем from_slot
-end:
-  retn
- }
-}
-
-static int drugExploit = 0;
-static void __declspec(naked) protinst_use_item_hook() {
- __asm {
-  dec  drugExploit
-  call obj_use_book_
-  inc  drugExploit
-  retn
- }
-}
-
-static void __declspec(naked) UpdateLevel_hook() {
- __asm {
-  inc  drugExploit
-  call perks_dialog_
-  dec  drugExploit
-  retn
- }
-}
-
-static void __declspec(naked) skill_level_hook() {
- __asm {
-  dec  drugExploit
-  call skill_level_
-  inc  drugExploit
-  retn
- }
-}
-
-static void __declspec(naked) SliderBtn_hook() {
- __asm {
-  dec  drugExploit
-  call skill_inc_point_
-  inc  drugExploit
-  retn
- }
-}
-
-static void __declspec(naked) SliderBtn_hook1() {
- __asm {
-  dec  drugExploit
-  call skill_dec_point_
-  inc  drugExploit
-  retn
- }
-}
-
-static void __declspec(naked) stat_level_hook() {
- __asm {
-  call stat_get_bonus_
-  cmp  ebx, 6                               // Проверяем только силу-удачу
-  ja   end
-//  test eax, eax                             // А есть хоть какой [+/-]бонус?
-//  jz   end                                  // Нет
-  cmp  drugExploit, 0                       // Вызов из нужных мест?
-  jl   checkPenalty                         // Проверка чтения книг/скилла
-  jg   noBonus                              // Получение перков
-  retn
-checkPenalty:
-  cmp  eax, 1                               // Положительный эффект?
-  jge  end                                  // Да - учитываем его
-noBonus:
-  xor  eax, eax                             // Не учитываем эффект от наркотиков/радиации/etc
-end:
-  retn
  }
 }
 
@@ -1069,22 +796,6 @@ end:
 
 void InventoryInit() {
 
- MakeCall(0x465556, &inven_right_hand_hook, true);
- MakeCall(0x465596, &inven_left_hand_hook, true);
- MakeCall(0x4655D6, &inven_worn_hook, true);
-
-// Исправление ошибки неучёта веса одетых вещей
- MakeCall(0x467132, &loot_container_hook, false);
-#ifdef TRACE
- MakeCall(0x4689D1, &barter_inventory_hook, false);
-#endif
- HookCall(0x467765, &move_inventory_hook);
- HookCall(0x46A146, &correctWeight);
-
-// Ширина текста 64, а не 80 
- SafeWrite8(0x46872D, 64);
- SafeWrite8(0x4688D5, 64);
-
  ReloadWeaponKey = GetPrivateProfileIntA("Input", "ReloadWeaponKey", 0, ini);
  if (ReloadWeaponKey) HookCall(0x43BB37, &ReloadWeaponHotKey);
 
@@ -1123,7 +834,7 @@ void InventoryInit() {
   HookCall(0x468929, &display_table_inventories_hook2);
 #endif
 
-  HookCall(0x468A8B, &barter_inventory_hook1);
+  HookCall(0x468A8B, &barter_inventory_hook);
  }
 
 // Использование химии из инвентаря на картинке игрока
@@ -1131,23 +842,6 @@ void InventoryInit() {
 
 // Показывать в инвентаре макс.вес
  MakeCall(0x465EF4, &display_stats_hook, true);
-
-// Исправление ошибки в инвентаре игрока связанной с IFACE_BAR_MODE=1 из f1_res.ini
- MakeCall(0x464D05, &inven_pickup_hook1, true);
-
-// Исправление ошибки использования только одной пачки патронов когда оружие находится перед
-// патронами
- HookCall(0x46960B, &drop_ammo_into_weapon_hook);
-
- if (GetPrivateProfileIntA("Misc", "DrugExploitFix", 0, ini)) {
-  HookCall(0x48B604, &protinst_use_item_hook);
-  HookCall(0x436283, &UpdateLevel_hook);
-  HookCall(0x434B28, &skill_level_hook);    // SavePlayer_
-  HookCall(0x435670, &SliderBtn_hook);
-  HookCall(0x4356D7, &skill_level_hook);    // SliderBtn_
-  HookCall(0x4356F0, &SliderBtn_hook1);
-  HookCall(0x49CA53, &stat_level_hook);
- }
 
 // Кнопки "Взять всё" и "Положить всё"
  MakeCall(0x4638D3, &make_loot_drop_button, false);

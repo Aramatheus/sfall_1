@@ -145,6 +145,8 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AmmoMod.h" />
+    <ClInclude Include="Bugs.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="CRC.h" />
     <ClInclude Include="Credits.h" />
@@ -164,6 +166,8 @@
     <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AmmoMod.cpp" />
+    <ClCompile Include="Bugs.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="CRC.cpp" />
     <ClCompile Include="Credits.cpp" />

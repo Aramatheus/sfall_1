@@ -24,7 +24,7 @@ static DWORD MainMenuYOffset;
 static DWORD MainMenuTextOffset;
 static DWORD OverrideColour;
 
-static const char* VerString = "SFALL 1 " VERSION_STRING;
+static const char* VerString = "SFALL1 " VERSION_STRING;
 
 static const DWORD MainMenuButtonYHookRet = 0x4735BA;
 static void __declspec(naked) MainMenuButtonYHook() {
