@@ -1479,7 +1479,7 @@ static void DllMain2() {
  dlogr(" Done", DL_INIT);
 
  dlogr("Applying credits patch", DL_INIT);
- CreditsInit();
+ //CreditsInit();
 
  if(GetPrivateProfileIntA("Misc", "DisablePipboyAlarm", 0, ini)) {
   SafeWrite8(0x489334, 0xC3);               // retn
